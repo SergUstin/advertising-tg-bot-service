@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  clickhouse-server:
+    image: clickhouse/clickhouse-server:24.8
+    container_name: clickhouse-server
+    restart: always
+    env_file:
+      - advertising-tg-bot.env
+    ports:
+      - "8123:8123"   # HTTP
+      - "9000:9000"   # Native
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  clickhouse-client:
+    image: clickhouse/clickhouse-client:latest
+    container_name: clickhouse-client
+    depends_on:
+      clickhouse-server:
+        condition: service_healthy
+    entrypoint: ["tail", "-f", "/dev/null"] # оставляем как utility контейнер
+    volumes:
+      - ./init-sql:/docker-entrypoint-initdb.d
+
+  bot-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bot-service
+    restart: always
+    env_file:
+      - advertising-tg-bot.env
+    depends_on:
+      clickhouse-server:
+        condition: service_healthy
+    ports:
+      - "8080:8080" # Spring Boot
+    command: ["java", "-jar", "app.jar"]
+
+volumes:
+  clickhouse_data:

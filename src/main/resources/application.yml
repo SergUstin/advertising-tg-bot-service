@@ -1,13 +1,14 @@
 spring:
   application:
     name: advertising-tg-bot-service
+
   config:
-    import: optional:file:advertising-tg-bot.env[.properties]
+    import:
+      - optional:classpath:advertising-tg-bot.env.template[.properties]
 
 server:
   port: 8081
 
-
 telegram:
   bot:
-    token: ${TELEGRAM_BOT_TOKEN}
+    token: ${TELEGRAM_BOT_TOKEN:dummy-token-for-local}

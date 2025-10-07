@@ -6,7 +6,7 @@ services:
     container_name: clickhouse-server
     restart: always
     env_file:
-      - advertising-tg-bot.env
+      - advertising-tg-bot.properties
     ports:
       - "8123:8123"   # HTTP
       - "9000:9000"   # Native
@@ -35,7 +35,7 @@ services:
     container_name: bot-service
     restart: always
     env_file:
-      - advertising-tg-bot.env
+      - advertising-tg-bot.properties
     depends_on:
       clickhouse-server:
         condition: service_healthy
